@@ -638,9 +638,8 @@ IsActive = IF(TODAY() <= Promotions[PromotionEndDate], "Active", "Expired")
 won’t be used for YTD, MTD, or time intelligence measures across FactSales or your model — it doesn’t belong in DimDate.
 
 Key Decision Point:
-
-Question																																
-Is this date part of my core reporting timeline (sales, orders, inventory)? - Go with DimDate							
-Is this for a specific use case (like PromotionEndDate, EventDeadline, DeliveryETA) not shared with other data? - Go with Calculated Column						
-Will I need time intelligence functions (YTD, MTD, drill-downs) on this date?- Go with DimDate								
-Do I need to connect it to other fact tables or slicers using time hierarchy? - Go with DimDate								
+																																
+- Is this date part of my core reporting timeline (sales, orders, inventory)? - Go with DimDate							
+- Is this for a specific use case (like PromotionEndDate, EventDeadline, DeliveryETA) not shared with other data? - Go with Calculated Column						
+- Will I need time intelligence functions (YTD, MTD, drill-downs) on this date?- Go with DimDate								
+- Do I need to connect it to other fact tables or slicers using time hierarchy? - Go with DimDate								

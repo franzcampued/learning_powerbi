@@ -120,8 +120,7 @@ Data Modeling (80% PowerQuery - change data before loading and 20% PowerBI - cha
 		- Reduce report load time
 		- Avoid performance hits from complex DAX or filters
 
-    ```Example Coca-Cola Use Case:
-        You have:
+    ```
         FactSales (50M rows of transactions)
         DimProduct
         DimDate
@@ -174,7 +173,8 @@ e.g Product Key , Name, SubCat, Cat
 - PowerBI more like recreates relationships visually from datawarehouse as PowerBI using PowerQuery import and transform data it got from datawarehouse.
     
 		
-	```[ Raw Data Sources ]
+	```
+    [ Raw Data Sources ]
 		↓
 	[ Data Ingestion (ETL/ELT — SQL, Python, Azure Data Factory, Glue, SSIS) ]
 		↓
@@ -199,7 +199,8 @@ Creating:
 	3. Create using DAX - MODELING TAB > Create table > CALENDAR() with specific or using MIN() and MAX(), or CALENDARAUTO()  --- THIS IS A TABLE NOT A COLUMN		
 
 	e.g but there are other ways
-    ```Month_Year = 
+    ```
+    Month_Year = 
 		DISTINCT( 
 		SELECTCOLUMNS ( 
 			CALENDAR (DATE (1950, 1, 1), 
@@ -207,7 +208,8 @@ Creating:
 				"Month", MONTH([Date]), 
 				"Year", YEAR([Date]) 
 		) 
-	)```
+	)
+    ```
 	
 **Relationships (based on keys)**	
 - PowerBI requires single coloumn relationships
@@ -256,18 +258,19 @@ e.g Multiple date columns in fact table --> you can create multiple date dim for
 e.g Multiple date columns in fact table --> many relationship to single date dim but only one active
 You can create DAX measure to specify which relationship to use by USERELATIONSHIP() 	
     Use inactive relationship for specific measure:
-		```Measure Name = CALCULATE (<Measurement function>, USERELATIONSHIP(<Dimension Key Column>, <Fact Key Column>)```			
+		```Measure Name = CALCULATE (<Measurement function>, USERELATIONSHIP(<Dimension Key Column>, <Fact Key Column>) ```			
 			
 **Hierarchies** 
-- will be used for data analysis and visualization)
+- Will be used for data analysis and visualization
+- Very useful to create Drilling-down visuals
 - Table View -> Right Click highest level of heirarchy -> Create Hierarchy -> Add other columns part of heirarchy -> optional: hide coloumns you added to heirarchy
+- Usually done to dim tables
+- Update arrangement/order in Model View
 **Formatting** 
 - Necessary for  proper sorting, categories, etc.
 - Table View - PowerBI e.g rounding and data categories usually done here, summarization (sum, avg, etc.), sorting, etc.
 **Data Category**
 - Necesseary for proper data recognition by PowerBI e.g Geographic data (Table View)	
-
-
 
 
 **Best Practices:**
@@ -276,16 +279,48 @@ You can create DAX measure to specify which relationship to use by USERELATIONSH
 - Validate relationships (cardinality and direction)
 
 ### Stage 5: DAX Measures and Calculations
+**DAX** 
+- Used after Power Query cleaning/transform data then load (calculated measures, time intelligence, filtered aggregations, rankings, kpis, conditionals)
+- Calculated columns - calculated at data load and when data is refreshed (expand dataset WITHOUT EDITING THE SOURCE) - added to table as it evaluate each row 	
+- Calculated measures - calculated at query time (as you intereact/filter) so, it's dynamic and more complex not stored in the table as it aggregate multiple rows
+- Best practice to create a new table name = _Calculations so that measures are not lost among the tables and coloums
+    e.g calc colums (price w/ tax column) vs calc measure (sum of price w/ tax)
+- USE VAR and RETURN to simplify and induce readability for complex calc measures	
+
+**DAX CONTEXT:**
 - Calculated columns (row context)
-- Measures (filter context — use measures instead of calculated columns unless row-by-row context is required.)
-- Time intelligence (YTD, MoM)
+    - Calculated Columns
+	- Calculated Measure (Iterators e.g SUMX())
+- Measures (filter context — use measures instead of calculated columns unless row-by-row context is required. - Applied before calculation is carried out)
+    - Attribute in a row
+	- Via Slicer
+	- Through filter pane
+    - Calculated Measure e.g using CALCULATE()
+ 	- Calculated filter will always override filters from visualization
+
+**Time intelligence (YTD, MoM)**
 
 ### Stage 6: Visualization in Power BI Desktop
 - Slicers
 - Charts
 - Bookmarks for story-telling
-- Drill-throughs and tooltips for deeper analysis
+- Drill-throughs
+    Drilling Options: (drill down turn on the drilling options)
+	- Specific drill (by clicking e.g bar)
+	- Expand to Next Level (for all values e.g Parent years -> Months but each months is combination of all years) and 
+	- Expand All (show the next level without losing the parent grouping)
+- Filtering visuals (by variables, top n, visual level, page level, report level, turning off interactions - specially for some cards)
+- Tooltips for deeper analysis
 - Reporting (Overview - EDA/Categories)
+- Performance Tuning (check performance with PowerBi Performance Analyzer - View Tab)
+    - DAX query slowness
+		- Tune DAX operations
+		- Improve Data Loading Performance
+	- Visual display slowness	
+		- Use less complicated visuals
+		- Show less info in screen
+		- Reduce number of visual on the page
+- DAX CALC() measure is very useful workaround for visualizations
 
 ### Stage 7: Publishing to Power BI Service
 1. Click Publish in Power BI Desktop
@@ -335,7 +370,8 @@ Define security roles in the Desktop model and map users in Power BI Service.
 - Refresh Setup -	Automated refresh with gateway
 - Access Control -	RLS and workspace permissions
 
-```[Data Sources] ───► [Power Query ETL] ───► [Data Model] ───► [Report Visuals]
+```
+[Data Sources] ───► [Power Query ETL] ───► [Data Model] ───► [Report Visuals]
    SQL, Excel,        Transformations         Star Schema         Charts, KPIs
    APIs, etc.            (M Code)               (DAX)               Filters
 
@@ -344,4 +380,267 @@ Define security roles in the Desktop model and map users in Power BI Service.
                          [Power BI Service / Gateway]
                           └─ Scheduled Refresh
                           └─ Workspace Sharing
-                          └─ App Deployment```
+                          └─ App Deployment 
+```
+
+# Additional Notes:
+
+**PowerBI Worflow:**
+- Use PowerQuery to clean and transform data before loading to PowerBI
+- Then we use TableView and DAX to create calculated columns, measures and apply business logics  for analysis and visuals
+
+
+**How to handle incremental data using PowerBI:**
+- Option 1: Append (Add to existing FactSales) in Power Query
+    - Go to Power Query Editor
+    - Use Get Data to import the new February file (CSV, Excel, SQL, etc.)
+    - In Power Query:
+        - Ensure column names and data types match FactSales
+        - Append Queries → Append the February query to the existing FactSales query
+        - Now FactSales contains both January + February
+    - After that:
+	    - Close & Apply to load the updated FactSales into the model
+	    - All your visuals, measures, and relationships automatically pick up the new data
+
+Bonus: If the Feb file is placed in the same folder every month, 
+you can even set up a folder query in Power Query to auto-pick up new files as they arrive.
+
+- Option 2: Overwrite or Replace FactSales Table If you treat each month as a full data dump (not incremental), you can replace the FactSales data source with a combined January + February dataset.
+    - Replace the existing FactSales source file or table
+    - Refresh the Power BI report
+    - The visuals will reflect the updated data
+
+This isn’t common for incremental data, but possible if that's how your files come.
+
+
+**What About the Dimensions (Dim tables)?**
+Usually DimCustomer, DimProduct, and DimDate remain static.
+
+Unless there are:
+-New products
+-New customers
+-New date values
+
+In that case:
+-Either update the existing Dim tables
+-Or set up append logic for Dim tables too (less common for DimDate though)
+
+**Automating Incremental Files**
+If you expect monthly files like this:
+
+- Set up a Folder connection in Power Query
+- Place all monthly files (January, February, March…) in a folder
+
+Power Query will:
+- Combine them automatically
+- Standardize structure
+- Load all months' data into FactSales
+
+Now every time you drop a new file in the folder, hit “Refresh” in Power BI and your report updates.
+
+```
+[ January.csv ]  
+[ February.csv ] 
+        ↓  
+    Power Query  
+(Append / Combine)  
+        ↓  
+FactSales Table  
+        ↓  
+Data Model (with Dim tables)  
+        ↓  
+Reports / Dashboards
+```
+
+
+No need to rebuild visuals
+No need to modify DAX (unless your business logic changes)
+No need to re-create relationships
+Just update the FactSales table — either by appending or replacing the source — and refresh the report.
+
+
+**Does Power Query Apply the Same Cleaning Steps to New Data Automatically?**
+Yes — if your query is set up correctly.
+
+Here’s how it works:
+- When you use Power Query to:
+- Connect to a data source (January file)
+- Apply cleaning/transformation steps (remove nulls, change types, split columns, etc.)
+- Those steps are saved in the Applied Steps pane for that query.
+
+If you append new data to that same query structure — those cleaning steps get applied to the new data too.
+
+Example:
+Let’s say your FactSales query has these Power Query steps:
+Remove null rows
+Split FullName column into FirstName and LastName
+Change OrderDate to Date type
+Filter out test sales data
+
+Now, when you append February’s data into the same FactSales query (either directly or through a Folder connector 
+that adds both January and February files together) — those same cleaning steps automatically run on the combined data.
+
+That’s the beauty of Power Query — the transformations are query-wide, not file-specific.
+
+**What If the New Data Has New Problems?**
+Sometimes incremental files are messy in different ways:
+
+- New unexpected null columns
+- Different date formats
+- New columns added
+- Missing required fields
+
+What you should do?
+- Preview the February data separately in Power Query
+- Apply the same cleaning steps or adjust them if necessary
+- Make sure the structure matches the existing FactSales query
+- Append the cleaned February data to FactSales query
+
+Or
+
+- If you’re using a Folder connector (combining multiple files):
+- Set up your cleaning steps AFTER combining files
+- That way, whether you add January, February, March, or April — the same cleaning logic applies to everything uniformly
+
+Folder Example:
+Imagine you have a folder like this:
+
+```
+SalesData/
+ ├── January.csv
+ ├── February.csv
+ ├── March.csv
+
+```
+
+In Power Query:
+
+- Connect to the folder
+- Combine files → Power Query will generate a sample query (called Transform Sample File)
+- Apply all your cleaning steps there
+
+The steps get applied to every new file you drop into that folder
+
+Best Practices:
+- Set up consistent file templates for incremental data
+- Use Folder connector for scalable, automated updates
+- Apply cleaning steps after combining files
+- Regularly preview new incremental data to catch unexpected issues
+- Keep your Power Query steps clean, organized, and well-named
+
+
+
+**Calculated Columns (DAX)**	
+Where it’s created									Inside Data Model (Table View / Model View) after data is loaded	
+When it’s calculated								After data load — dynamically evaluated and stored in the model	
+Language used										DAX (Data Analysis Expressions)	
+Performance											Adds overhead to the model size (since it lives in the model)	
+Depends on relationships / filter context?			Yes — can access related tables via relationships	
+Use in measures / visual context					Can interact with DAX measures and slicers dynamically	
+
+
+
+```Example	Profit = [SalesAmount] - [Cost] (using related tables too)	Full Name = [First Name] & " " & [Last Name] (before loading data)```
+
+**New Columns in Power Query (M)**
+Inside Power Query Editor during data cleaning/transformation
+Before data load — computed as data is loaded
+M Language (Power Query Formula Language)
+More efficient — handled before load; reduces model load
+No — operates row-by-row within the query, independent of relationships
+Static values — cannot be influenced by slicers or DAX calculations
+
+**When to Use Which? (Best Practices)**
+
+Scenario																									Recommended
+You need to clean, shape, or derive columns before loading data												Power Query
+You need to merge or transform columns using simple row-by-row logic										Power Query
+You need a column dependent on relationships, calculated contextually, or influenced by slicers/filters		Calculated Column (DAX)
+You need calculated values for use in relationships (e.g. calculated keys)									Calculated Column (DAX)
+You care about performance and model size optimization														Prefer Power Query (where possible)
+You’re creating complex, dynamic logic that depends on other tables' values									Calculated Column (DAX)
+
+
+🎯 Practical Example:
+Let’s say you have this data:
+
+
+Product	Amount	Cost
+Coke	100		70
+
+In Power Query
+Create a Profit column as Amount - Cost
+
+Good if it’s a static, row-by-row calculation without relationships
+✔️ Efficient, light on model
+
+In Calculated Column (DAX)
+Create a Profit Margin like:
+
+Profit Margin = (Sales[Amount] - Sales[Cost]) / Sales[Amount]
+OR use something involving related tables:
+
+Profit Category = IF(Sales[Profit] > RELATED(Targets[ProfitGoal]), "Above Target", "Below Target")
+✔️ Needed if it involves relationships or needs to react to slicers
+
+📌 Quick Rule of Thumb:
+“If it can be done in Power Query — do it there.
+If it needs to interact with your model’s relationships or slicers — use DAX.”
+
+
+**If There’s a Date in a Table — Should You Extract Month, Year, etc.?**
+Technically you can — but it’s NOT the best practice. The right approach is to create a proper Date Dimension (Dim Date table) and use it for all your time-based analysis.
+
+Why Not Just Extract Month, Year Columns Inside Fact Tables?
+You could extract them as Calculated Columns or in Power Query… BUT:
+
+It duplicates logic across tables
+Harder to maintain and update if your date logic changes
+Can't use built-in Time Intelligence DAX functions (like YTD, MTD, SAMEPERIODLASTYEAR) without a proper Date table
+Causes inconsistent drill-downs and slicer behavior
+Breaks clean star schema modeling principles
+
+What’s the Right Way?
+
+Create a centralized DimDate table
+With one row per date
+Columns for Year, Month, Quarter, Day, Week, etc.
+Mark it as Date Table in Power BI
+Link your Fact table’s DateKey to DimDate[Date]
+
+Then — instead of extracting Month, Year inside FactSales → Just relate to DimDate and use those columns in visuals, filters, and slicers.
+
+Better to stick with DimDate and avoid cal columns for Month/Year?	
+Yes — unless it’s a special, case-specific derived date (like PromotionEndDate) unrelated to your Date table
+
+Example Use Case: PromotionEndDate
+Imagine this:
+
+Promotion		PromotionStartDate	PromotionEndDate	Product	SalesAmount
+Summer Blast	2024-06-01			2024-08-31	Coke	10,000
+You’d normally link Sales[SaleDate] → DimDate[Date].
+
+But if you need to analyze based on PromotionEndDate — that might:
+
+Not follow your main calendar timeline (example: fiscal calendars, marketing calendars, etc.)
+Be incomplete or irregular (like some promotions ending without a clean date)
+Only be used for special case calculations (like days remaining, active promotion status)
+
+In This Case → Create a Calculated Column
+Example:
+Let’s say you want to know the Promotion End Month:
+PromotionEndMonth = FORMAT(Promotions[PromotionEndDate], "MMMM")
+
+Or a Promotion Status:
+IsActive = IF(TODAY() <= Promotions[PromotionEndDate], "Active", "Expired")
+
+📌 Since this is specific to the Promotions table, and 
+won’t be used for YTD, MTD, or time intelligence measures across FactSales or your model — it doesn’t belong in DimDate.
+
+Key Decision Point:
+
+Question																											Go with DimDate					Go with Calculated Column
+Is this date part of my core reporting timeline (sales, orders, inventory)?											✅ Yes							❌ No
+Is this for a specific use case (like PromotionEndDate, EventDeadline, DeliveryETA) not shared with other data?		❌ No							✅ Yes
+Will I need time intelligence functions (YTD, MTD, drill-downs) on this date?										✅ Yes							❌ No
+Do I need to connect it to other fact tables or slicers using time hierarchy?										✅ Yes							❌ No

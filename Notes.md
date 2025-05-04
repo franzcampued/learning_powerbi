@@ -538,9 +538,7 @@ Best Practices:
 - Depends on relationships / filter context? Yes — can access related tables via relationships	
 - Use in measures / visual context - Can interact with DAX measures and slicers dynamically	
 
-
-
-```Profit = [SalesAmount] - [Cost] (using related tables too)	Full Name = [First Name] & " " & [Last Name] (before loading data)```
+```Profit = [SalesAmount] - [Cost] (using related tables too)```	
 
 **New Columns in Power Query (M)**
 - Inside Power Query Editor during data cleaning/transformation
@@ -550,15 +548,16 @@ Best Practices:
 - No — operates row-by-row within the query, independent of relationships
 - Static values — cannot be influenced by slicers or DAX calculations
 
+```Full Name = [First Name] & " " & [Last Name] (before loading data)```
+
 **When to Use Which? (Best Practices)**
 
-Scenario																									Recommended
-You need to clean, shape, or derive columns before loading data												Power Query
-You need to merge or transform columns using simple row-by-row logic										Power Query
-You need a column dependent on relationships, calculated contextually, or influenced by slicers/filters		Calculated Column (DAX)
-You need calculated values for use in relationships (e.g. calculated keys)									Calculated Column (DAX)
-You care about performance and model size optimization														Prefer Power Query (where possible)
-You’re creating complex, dynamic logic that depends on other tables' values									Calculated Column (DAX)
+- You need to clean, shape, or derive columns before loading data - Power Query
+- You need to merge or transform columns using simple row-by-row logic - Power Query
+- You need a column dependent on relationships, calculated contextually, or influenced by slicers/filters - Calculated Column (DAX)
+- You need calculated values for use in relationships (e.g. calculated keys) - Calculated Column (DAX)
+- You care about performance and model size optimization - Prefer Power Query (where possible)
+- You’re creating complex, dynamic logic that depends on other tables' values - Calculated Column (DAX)
 
 
 🎯 Practical Example:
@@ -591,24 +590,25 @@ If it needs to interact with your model’s relationships or slicers — use DAX
 
 
 **If There’s a Date in a Table — Should You Extract Month, Year, etc.?**
+
 Technically you can — but it’s NOT the best practice. The right approach is to create a proper Date Dimension (Dim Date table) and use it for all your time-based analysis.
 
 Why Not Just Extract Month, Year Columns Inside Fact Tables?
 You could extract them as Calculated Columns or in Power Query… BUT:
 
-It duplicates logic across tables
-Harder to maintain and update if your date logic changes
-Can't use built-in Time Intelligence DAX functions (like YTD, MTD, SAMEPERIODLASTYEAR) without a proper Date table
-Causes inconsistent drill-downs and slicer behavior
-Breaks clean star schema modeling principles
+- It duplicates logic across tables
+- Harder to maintain and update if your date logic changes
+- Can't use built-in Time Intelligence DAX functions (like YTD, MTD, SAMEPERIODLASTYEAR) without a proper Date table
+- Causes inconsistent drill-downs and slicer behavior
+- Breaks clean star schema modeling principles
 
 What’s the Right Way?
 
-Create a centralized DimDate table
-With one row per date
-Columns for Year, Month, Quarter, Day, Week, etc.
-Mark it as Date Table in Power BI
-Link your Fact table’s DateKey to DimDate[Date]
+- Create a centralized DimDate table
+- With one row per date
+- Columns for Year, Month, Quarter, Day, Week, etc.
+- Mark it as Date Table in Power BI
+- Link your Fact table’s DateKey to DimDate[Date]
 
 Then — instead of extracting Month, Year inside FactSales → Just relate to DimDate and use those columns in visuals, filters, and slicers.
 
@@ -618,23 +618,27 @@ Yes — unless it’s a special, case-specific derived date (like PromotionEndDa
 Example Use Case: PromotionEndDate
 Imagine this:
 
+```
 Promotion		PromotionStartDate	PromotionEndDate	Product	SalesAmount
 Summer Blast	2024-06-01			2024-08-31	Coke	10,000
-You’d normally link Sales[SaleDate] → DimDate[Date].
+```
 
+You’d normally link Sales[SaleDate] → DimDate[Date].
 But if you need to analyze based on PromotionEndDate — that might:
 
-Not follow your main calendar timeline (example: fiscal calendars, marketing calendars, etc.)
-Be incomplete or irregular (like some promotions ending without a clean date)
-Only be used for special case calculations (like days remaining, active promotion status)
+- Not follow your main calendar timeline (example: fiscal calendars, marketing calendars, etc.)
+- Be incomplete or irregular (like some promotions ending without a clean date)
+- Only be used for special case calculations (like days remaining, active promotion status)
 
 In This Case → Create a Calculated Column
+
 Example:
 Let’s say you want to know the Promotion End Month:
 
 ```PromotionEndMonth = FORMAT(Promotions[PromotionEndDate], "MMMM")```
 
 Or a Promotion Status:
+
 ```IsActive = IF(TODAY() <= Promotions[PromotionEndDate], "Active", "Expired")```
 
 📌 Since this is specific to the Promotions table, and 

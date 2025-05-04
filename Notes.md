@@ -577,10 +577,12 @@ Good if it’s a static, row-by-row calculation without relationships
 In Calculated Column (DAX)
 Create a Profit Margin like:
 
-Profit Margin = (Sales[Amount] - Sales[Cost]) / Sales[Amount]
+```Profit Margin = (Sales[Amount] - Sales[Cost]) / Sales[Amount]```
+
 OR use something involving related tables:
 
-Profit Category = IF(Sales[Profit] > RELATED(Targets[ProfitGoal]), "Above Target", "Below Target")
+```Profit Category = IF(Sales[Profit] > RELATED(Targets[ProfitGoal]), "Above Target", "Below Target")```
+
 ✔️ Needed if it involves relationships or needs to react to slicers
 
 📌 Quick Rule of Thumb:
@@ -629,10 +631,11 @@ Only be used for special case calculations (like days remaining, active promotio
 In This Case → Create a Calculated Column
 Example:
 Let’s say you want to know the Promotion End Month:
-PromotionEndMonth = FORMAT(Promotions[PromotionEndDate], "MMMM")
+
+```PromotionEndMonth = FORMAT(Promotions[PromotionEndDate], "MMMM")```
 
 Or a Promotion Status:
-IsActive = IF(TODAY() <= Promotions[PromotionEndDate], "Active", "Expired")
+```IsActive = IF(TODAY() <= Promotions[PromotionEndDate], "Active", "Expired")```
 
 📌 Since this is specific to the Promotions table, and 
 won’t be used for YTD, MTD, or time intelligence measures across FactSales or your model — it doesn’t belong in DimDate.

@@ -32,7 +32,7 @@ Power BI is a Business Intelligence tool by Microsoft that allows users to:
 - Profile and clean data (identify duplicates, nulls, anomalies)
 
 **Default 1000 rows but can be changed (lower left) - no row lmits but it's data size limit**
-Power BI Free:Data Size: 
+Power BI Free:
 * 1 GB per dataset and no workspace
 Power BI Pro:Data Size: 
 * 10 GB total storage for the workspace, including datasets, reports, and dashboards. 
@@ -273,7 +273,7 @@ You can create DAX measure to specify which relationship to use by USERELATIONSH
 - Necesseary for proper data recognition by PowerBI e.g Geographic data (Table View)	
 
 
-**Best Practices:**
+**Best Practices for data modeling:**
 - Use surrogate integer keys
 - Hide columns not meant for reporting
 - Validate relationships (cardinality and direction)
@@ -413,8 +413,7 @@ you can even set up a folder query in Power Query to auto-pick up new files as t
 This isn’t common for incremental data, but possible if that's how your files come.
 
 
-**What About the Dimensions (Dim tables)?**
-Usually DimCustomer, DimProduct, and DimDate remain static.
+**What About the Dimensions (Dim tables)?** Usually DimCustomer, DimProduct, and DimDate remain static.
 
 Unless there are:
 -New products
@@ -531,24 +530,25 @@ Best Practices:
 
 
 **Calculated Columns (DAX)**	
-Where it’s created									Inside Data Model (Table View / Model View) after data is loaded	
-When it’s calculated								After data load — dynamically evaluated and stored in the model	
-Language used										DAX (Data Analysis Expressions)	
-Performance											Adds overhead to the model size (since it lives in the model)	
-Depends on relationships / filter context?			Yes — can access related tables via relationships	
-Use in measures / visual context					Can interact with DAX measures and slicers dynamically	
+
+- Where it’s created - Inside Data Model (Table View / Model View) after data is loaded	
+- When it’s calculated - After data load — dynamically evaluated and stored in the model	
+- Language used - DAX (Data Analysis Expressions)	
+- Performance - Adds overhead to the model size (since it lives in the model)	
+- Depends on relationships / filter context? Yes — can access related tables via relationships	
+- Use in measures / visual context - Can interact with DAX measures and slicers dynamically	
 
 
 
-```Example	Profit = [SalesAmount] - [Cost] (using related tables too)	Full Name = [First Name] & " " & [Last Name] (before loading data)```
+```Profit = [SalesAmount] - [Cost] (using related tables too)	Full Name = [First Name] & " " & [Last Name] (before loading data)```
 
 **New Columns in Power Query (M)**
-Inside Power Query Editor during data cleaning/transformation
-Before data load — computed as data is loaded
-M Language (Power Query Formula Language)
-More efficient — handled before load; reduces model load
-No — operates row-by-row within the query, independent of relationships
-Static values — cannot be influenced by slicers or DAX calculations
+- Inside Power Query Editor during data cleaning/transformation
+- Before data load — computed as data is loaded
+- M Language (Power Query Formula Language)
+- More efficient — handled before load; reduces model load
+- No — operates row-by-row within the query, independent of relationships
+- Static values — cannot be influenced by slicers or DAX calculations
 
 **When to Use Which? (Best Practices)**
 

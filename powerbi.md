@@ -619,8 +619,8 @@ Example Use Case: PromotionEndDate
 Imagine this:
 
 ```
-Promotion		PromotionStartDate	PromotionEndDate	Product	SalesAmount
-Summer Blast	2024-06-01			2024-08-31	Coke	10,000
+Promotion		PromotionStartDate	PromotionEndDate	Product	    SalesAmount
+Summer Blast	2024-06-01  		2024-08-31	        Coke	    10,000
 ```
 
 You’d normally link Sales[SaleDate] → DimDate[Date].

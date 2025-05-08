@@ -30,16 +30,44 @@ This makes the query e.g 3 columns (foreign) should be equal same with the prima
 e.g sample ON Clause
 DimDate.DateKey = FactResellerSales.DueDateKey AND DimDate.DateKey = FactResellerSales.OrderDateKey AND DimDate.DateKey = FactResellerSales.ShipDateKey
 
+DateKey     DueDateKey OrderDateKey ShipDateKey SalesAmount
+2023-08-03  2023-08-03 2023-08-03   2023-08-03  40
+
 - Chasm trap (The date table has a one-to-many relationship to each of the two sales tables—creating a many-to-one-to-many rela‐ tionship between the two sales tables.)
 This can lead to duplication in the 2nd join since 1st join return multiple values that that ON CLAUSE will be using as basis of 2nd join
 
-2023-08-02 2023-08-02 20 2023-08-02 200
-2023-08-02 2023-08-02 30 2023-08-02 200 (duplicate)
+OrderDateKey SalesAmount
+2023-08-01   10
+2023-08-02   20
+2023-08-02   30
+2023-08-03   40
+
+OrderDateKey SalesAmount
+2023-08-01   100
+2023-08-02   200
+2023-08-03   300
+
+DateKey     FRS.OrderDateKey FRS.SalesAmount FIS.OrderDateKey FIS.SalesAmount
+2023-08-01  2023-08-01       10              2023-08-01       100
+2023-08-02  2023-08-02       20              2023-08-02       200
+2023-08-02  2023-08-02       30              2023-08-02       200 (duplicate)
 
 - Fan trap ()
 You can step into a fan trap in situations where you want to aggregate on a value on the “one” side of a relationship, while joining a table on the “many” side of the same relationship
 
-1 100                1 10
-1 100 (duplicate)    2 20
-2 200                1 30
-3 300                1 40
+SalesOrderID Freight
+1            100
+2            200
+3            300
+
+SalesOrderID SalesOrderLineID OrderQty
+1            1                10
+1            2                20
+2            1                30
+3            1                40
+
+SalesOrderID Freight            SalesOrderLineID OrderQty
+1            100                1                10
+1            100 (duplicate)    2                20
+2            200                1                30
+3            300                1                40
